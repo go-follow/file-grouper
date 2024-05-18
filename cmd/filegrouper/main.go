@@ -11,10 +11,11 @@ func main() {
 	cfg := config.New()
 
 	g := grouper.New(cfg.Directory, cfg.IsRecurse)
-	if err := g.GroupFiles(); err != nil {
+	count, err := g.GroupFiles()
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	fmt.Println("success")
+	fmt.Printf("Processing is complete. %d files successfully processed", count)
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type Grouper interface {
-	GroupFiles() error
+	GroupFiles() (int, error)
 }
 
 type Group struct {
@@ -23,12 +23,12 @@ func New(directory string, isRecurse bool) Grouper {
 	}
 }
 
-func (g *Group) GroupFiles() error {
+func (g *Group) GroupFiles() (int, error) {
 	entries, err := os.ReadDir(g.directory)
 	if err != nil {
-		return fmt.Errorf("failed os.ReadDir: %w", err)
+		return -1, fmt.Errorf("failed os.ReadDir: %w", err)
 	}
-
+	count := 0
 	for _, e := range entries {
 		// TODO: implement recursive
 		if e.IsDir() {
@@ -36,34 +36,29 @@ func (g *Group) GroupFiles() error {
 		}
 		fileInfo, err := e.Info()
 		if err != nil {
-			return fmt.Errorf("failed get Info file: %w", err)
+			return -1, fmt.Errorf("failed get Info file: %w", err)
 		}
 		path := g.makePathGroup(fileInfo.ModTime())
 		src := fmt.Sprintf("%s/%s", g.directory, fileInfo.Name())
 		dst := fmt.Sprintf("%s/%s", path, fileInfo.Name())
-		if err := g.copyFile(src, dst); err != nil {
-			return fmt.Errorf("failed copyFile: %w", err)
+		if err := g.moveFile(src, dst); err != nil {
+			return -1, fmt.Errorf("failed copyFile: %w", err)
 		}
+		count++
 	}
-	return nil
+	return count, nil
 }
 
 func (g *Group) makePathGroup(t time.Time) string {
-	return fmt.Sprintf("%s/output/%d/%s", g.directory, t.Year(), t.Format("2006-01-02"))
+	return fmt.Sprintf("%s/%d/%s", g.directory, t.Year(), t.Format("2006-01-02"))
 }
 
-func (g *Group) copyFile(src, dst string) error {
-	data, err := os.ReadFile(src)
-	if err != nil {
-		return fmt.Errorf("failed os.ReadFile: %w", err)
-	}
-
+func (g *Group) moveFile(src, dst string) error {
 	if err := os.MkdirAll(path.Dir(dst), 0755); err != nil {
 		return fmt.Errorf("failed os.MkdirAll: %w", err)
 	}
-
-	if err := os.WriteFile(dst, data, 0600); err != nil {
-		return fmt.Errorf("failed os.WriteFile: %w", err)
+	if err := os.Rename(src, dst); err != nil {
+		return fmt.Errorf("failed os.Rename: %w", err)
 	}
 	return nil
 }
