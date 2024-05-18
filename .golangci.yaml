@@ -1,14 +1,12 @@
 run:
   concurrency: 4
-  timeout: 1m
+  timeout: 5m
   issues-exit-code: 1
   tests: true
   build-tags:
     - auth
 
 output:
-  # colored-line-number|line-number|json|tab|checkstyle|code-climate, default is "colored-line-number"
-  format: colored-line-number
   # print lines of code with issue, default is true
   print-issued-lines: true
   # print linter name in the end of issue text, default is true
@@ -18,151 +16,172 @@ output:
   # add a prefix to the output file references; default is no prefix
   path-prefix: ""
 
-  linters-settings:
-    depguard:
-      list-type: blacklist
-      packages:
-        # logging is allowed only by logutils.Log, logrus
-        # is allowed to use only in logutils package
-        - github.com/sirupsen/logrus
-      packages-with-error-message:
-        - github.com/sirupsen/logrus: "logging is allowed only by logutils.Log"
-    dupl:
-      threshold: 100
-    exhaustive:
-      default-signifies-exhaustive: false
-    funlen:
-      lines: 100
-      statements: 50
-    gci:
-      local-prefixes: github.com/golangci/golangci-lint
-    goconst:
-      min-len: 2
-      min-occurrences: 2
-    gocritic:
-      enabled-tags:
-        - diagnostic
-        - experimental
-        - opinionated
-        - performance
-        - style
-      disabled-checks:
-        - dupImport # https://github.com/go-critic/go-critic/issues/845
-        - ifElseChain
-        - octalLiteral
-        - whyNoLint
-        - wrapperFunc
-    gocyclo:
-      min-complexity: 15
-    goimports:
-      local-prefixes: github.com/golangci/golangci-lint
-    golint:
-      min-confidence: 0
-    gomnd:
-      settings:
-        mnd:
-          # don't include the "operation" and "assign"
-          checks: argument,case,condition,return
-    govet:
-      check-shadowing: true
-      settings:
-        printf:
-          funcs:
-            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Infof
-            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Warnf
-            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Errorf
-            - (github.com/golangci/golangci-lint/pkg/logutils.Log).Fatalf
-    lll:
-      line-length: 140
-    maligned:
-      suggest-new: true
-    misspell:
-      locale: US
-    nolintlint:
-      allow-leading-space: true # don't require machine-readable nolint directives (i.e. with no leading space)
-      allow-unused: false # report any unused nolint directives
-      require-explanation: false # don't require an explanation for nolint directives
-      require-specific: false # don't require nolint directives to be specific about which linter is being skipped
+linters-settings:
+  depguard:
+    rules:
+      main:
+        # List of allowed packages.
+        allow:
+          - $gostd
+          - moul.io
+          - github.com
+          - git.dev.cloud.mts.ru
 
-  linters:
-    # please, do not use `enable-all`: it's deprecated and will be removed soon.
-    # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
-    disable-all: true
-    enable:
-      - bodyclose
-      - deadcode
-      - depguard
-      - dogsled
-      - dupl
-      - errcheck
-      - exhaustive
-      - funlen
-      - gochecknoinits
-      - goconst
-      - gocritic
-      - gocyclo
-      - gofmt
-      - goimports
-      - golint
-      - gomnd
-      - goprintffuncname
-      - gosec
-      - gosimple
-      - govet
-      - ineffassign
-      - interfacer
-      - lll
-      - misspell
-      - nakedret
-      - noctx
-      - nolintlint
-      - rowserrcheck
-      - scopelint
-      - staticcheck
-      - structcheck
-      - stylecheck
-      - typecheck
-      - unconvert
-      - unparam
-      - unused
-      - varcheck
-      - whitespace
+  dogsled:
+    max-blank-identifiers: 3
 
-    # don't enable:
-    # - asciicheck
-    # - gochecknoglobals
-    # - gocognit
-    # - godot
-    # - godox
-    # - goerr113
-    # - maligned
-    # - nestif
-    # - prealloc
-    # - testpackage
-    # - wsl
+  dupl:
+    threshold: 100
 
-  issues:
-    # Excluding configuration per-path, per-linter, per-text and per-source
-    exclude-rules:
-      - path: _test\.go
-        linters:
-          - gomnd
+  errcheck:
+    check-type-assertions: true # checking of errors in type assertions
+    check-blank: false # errors assignment to blank identifier
 
-      # https://github.com/go-critic/go-critic/issues/926
-      - linters:
-          - gocritic
-        text: "unnecessaryDefer:"
+  exhaustive:
+    default-signifies-exhaustive: false
+    ignore-enum-members: ".*Undefined.*|.*Count"
+    explicit-exhaustive-switch: true
 
-  run:
-    skip-dirs:
-      - test/testdata_etc
-      - internal/cache
-      - internal/renameio
-      - internal/robustio
+  funlen:
+    lines: 200
+    statements: 100
 
-  # golangci.com configuration
-  # https://github.com/golangci/golangci/wiki/Configuration
-  service:
-    golangci-lint-version: 1.23.x # use the fixed version to not introduce new linters unexpectedly
-    prepare:
-      - echo "here I can run custom commands, but no preparation needed for this repo"
+  gocognit:
+    min-complexity: 20 # minimal code complexity to report
+
+  goconst:
+    min-len: 2
+    min-occurrences: 2
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - ifElseChain
+      - importShadow
+      - initClause
+      - octalLiteral
+      - singleCaseSwitch
+      - sloppyReassign
+      - unnamedResult
+    settings:
+      hugeParam:
+        sizeThreshold: 1024
+      rangeValCopy:
+        sizeThreshold: 1024
+
+  gocyclo:
+    min-complexity: 20
+
+  goimports:
+    local-prefixes: git.dev.cloud.mts.ru/mws-public/auth/iam
+
+  gosec:
+    excludes:
+      - G101 # Potential hardcoded credentials
+      - G108 # Profiling endpoint automatically exposed on /debug/pprof
+      - G402 # TLS InsecureSkipVerify set true
+
+  #  importas:
+  #    alias:
+  #      - pkg: pkg
+  #        alias: alias
+
+  lll:
+    line-length: 160
+    tab-width: 4
+
+  misspell:
+    locale: US
+    ignore-words:
+      - cancelled
+      - cancelling
+      - favour
+      - marshalled
+      - marshalling
+
+  nakedret:
+    max-func-lines: 20
+
+  nolintlint:
+    allow-unused: false # report any unused nolint directives
+    require-explanation: true # don't require an explanation for nolint directives
+    require-specific: true # don't require nolint directives to be specific about which linter is being skipped
+
+linters:
+  # please, do not use `enable-all`: it's deprecated and will be removed soon.
+  # inverted configuration with `enable-all` and `disable` is not scalable during updates of golangci-lint
+  disable-all: true
+  enable:
+    - asciicheck # Simple linter to check that your code does not contain non-ASCII identifiers
+    - bodyclose # Checks whether HTTP response body is closed successfully [fast: true, auto-fix: false]
+    - depguard # Go linter that checks if package imports are in a list of acceptable packages [fast: true, auto-fix: false]
+    - dogsled # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f()) [fast: true, auto-fix: false]
+    - errcheck # Errcheck is a program for checking for unchecked errors in go programs. These unchecked errors can be critical bugs in some cases [fast: true, auto-fix: false]
+    - errname # Checks that sentinel errors are prefixed with the Err and error types are suffixed with the Error.
+    - exhaustive # Check exhaustiveness of enum switch statements [fast: true, auto-fix: false]
+    - exportloopref # An analyzer that finds exporting pointers for loop variables. [fast: true, auto-fix: false]
+    - funlen # Tool for detection of long functions [fast: true, auto-fix: false]
+    - gocognit # Computes and checks the cognitive complexity of functions [fast: true, auto-fix: false]
+    #    - goconst # Finds repeated strings that could be replaced by a constant [fast: true, auto-fix: false]
+    - gocritic # The most opinionated Go source code linter [fast: true, auto-fix: false]
+    - gocyclo # Computes and checks the cyclomatic complexity of functions [fast: true, auto-fix: false]
+    - gofmt # Gofmt checks whether code was gofmt-ed. By default this tool runs with -s option to check for code simplification [fast: true, auto-fix: true]
+    - goimports # Goimports does everything that gofmt does. Additionally it checks unused imports [fast: true, auto-fix: true]
+    - goprintffuncname # Checks that printf-like functions are named with `f` at the end [fast: true, auto-fix: false]
+    - gosec # Inspects source code for security problems [fast: true, auto-fix: false]
+    - gosimple # Linter for Go source code that specializes in simplifying code
+    - govet # Vet examines Go source code and reports suspicious constructs, such as Printf calls whose arguments do not align with the format string [fast: true, auto-fix: false]
+    - importas # Enforces consistent import aliases
+    - ineffassign # Detects when assignments to existing variables are not used [fast: true, auto-fix: false]
+    - lll # Reports long lines [fast: true, auto-fix: false]
+    - makezero # Finds slice declarations with non-zero initial length
+    - misspell # Finds commonly misspelled English words in comments [fast: true, auto-fix: true]
+    #    - nakedret # Finds naked returns in functions greater than a specified function length [fast: true, auto-fix: false]
+    - noctx # Noctx finds sending http request without context.Context [fast: true, auto-fix: false]
+    - nolintlint # Reports ill-formed or insufficient nolint directives [fast: true, auto-fix: false]
+    - prealloc # Finds slice declarations that could potentially be preallocated [fast: true, auto-fix: false]
+    - rowserrcheck # Checks whether Err of rows is checked successfully [fast: true, auto-fix: false]
+    - staticcheck # Staticcheck is a go vet on steroids, applying a ton of static analysis checks [fast: true, auto-fix: false]
+    - stylecheck # Stylecheck is a replacement for golint [fast: true, auto-fix: false]
+    - tenv # tenv is analyzer that detects using os.Setenv instead of t.Setenv since Go1.17
+    - typecheck # Like the front-end of a Go compiler, parses and type-checks Go code [fast: true, auto-fix: false]
+    - unconvert # Remove unnecessary type conversions [fast: true, auto-fix: false]
+    - unused # Checks Go code for unused constants, variables, functions and types [fast: false, auto-fix: false]
+    - whitespace # Tool for detection of leading and trailing whitespace [fast: true, auto-fix: true]
+
+  # don't enable:
+  # - gochecknoglobals
+  # - gochecknoinits
+  # - godot
+  # - godox
+  # - goerr113
+  # - maligned
+  # - nestif
+  # - testpackage
+  # - wsl
+
+issues:
+  # Excluding configuration per-path, per-linter, per-text and per-source
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+        - gocognit
+        - goconst
+        - goerr113
+        - gomnd
+        - gosec
+
+    # https://github.com/go-critic/go-critic/issues/926
+    - linters:
+        - gocritic
+      text: "unnecessaryDefer:"
+
+    - linters:
+        - lll
+      source: "^//go:generate |^// @Description |^// @Header |.*`.* ?validate:\\\"|.*`.* ?mapstructure:\\\""
