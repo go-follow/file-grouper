@@ -5,15 +5,17 @@ import (
 
 	"github.com/go-follow/file-grouper/internal/config"
 	"github.com/go-follow/file-grouper/internal/grouper"
+	logger "github.com/go-follow/file-grouper/pkg"
 )
 
 func main() {
 	cfg := config.New()
+	l := logger.New()
 
 	g := grouper.New(cfg.Directory, cfg.IsRecurse)
 	count, err := g.GroupFiles()
 	if err != nil {
-		fmt.Println(err)
+		l.Error(err)
 		return
 	}
 
