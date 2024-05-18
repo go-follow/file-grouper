@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"time"
 )
 
@@ -32,6 +33,9 @@ func (g *Group) GroupFiles() (int, error) {
 	for _, e := range entries {
 		// TODO: implement recursive
 		if e.IsDir() {
+			continue
+		}
+		if strings.HasPrefix(e.Name(), ".") {
 			continue
 		}
 		fileInfo, err := e.Info()
