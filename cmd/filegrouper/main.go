@@ -12,7 +12,7 @@ func main() {
 	cfg := config.New()
 	l := logger.New()
 
-	g := grouper.New(cfg.Directory, cfg.IsRecurse)
+	g := grouper.New(cfg.Directory, cfg.Directory, cfg.IsRecurse)
 	count, err := g.GroupFiles()
 	if err != nil {
 		l.Error(err)
