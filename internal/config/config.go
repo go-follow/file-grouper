@@ -9,8 +9,8 @@ type Config struct {
 
 func New() *Config {
 	cfg := &Config{}
-	flag.StringVar(&cfg.Directory, "directory", ".", "Directory to search files")
-	flag.BoolVar(&cfg.IsRecurse, "recurse", false, "Recurse into subdirectories")
+	flag.StringVar(&cfg.Directory, "d", ".", "Directory to search files")
+	flag.BoolVar(&cfg.IsRecurse, "r", false, "Recurse into subdirectories")
 	flag.Parse()
 	return cfg
 }
