@@ -2,5 +2,5 @@
 Grouping files by date. For example, grouping photos and videos
 
 ## flags
-* -d -  directory directory for file processing (default: current directory)
+* -d - directory for files processing (required)
 * -r - recursive directory processing (default: false)

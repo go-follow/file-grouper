@@ -1,16 +1,18 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/go-follow/file-grouper/internal/config"
 	"github.com/go-follow/file-grouper/internal/grouper"
-	logger "github.com/go-follow/file-grouper/pkg"
+	logger "github.com/go-follow/file-grouper/pkg/logger"
 )
 
 func main() {
-	cfg := config.New()
 	l := logger.New()
+	cfg, err := config.New()
+	if err != nil {
+		l.Error(err)
+		return
+	}
 
 	g := grouper.New(cfg.Directory, cfg.Directory, cfg.IsRecurse)
 	count, err := g.GroupFiles()
@@ -19,5 +21,5 @@ func main() {
 		return
 	}
 
-	fmt.Printf("Processing is complete. %d files successfully processed", count)
+	l.Infof("Processing is complete. %d files successfully processed", count)
 }
