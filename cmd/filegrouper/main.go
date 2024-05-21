@@ -21,5 +21,5 @@ func main() {
 		return
 	}
 
-	l.Infof("Processing is complete. %d files successfully processed", count)
+	l.Infof("Processing is completed. %d files successfully processed", count)
 }
